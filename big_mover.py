@@ -40,6 +40,14 @@ def copy_file(src, dst):
         logging.error(f"Failed to copy from {src} to {dst}. Error: {e}")
         return 0
 
+def remove_file(file):
+    """Remove a file."""
+    try:
+        os.remove(file)
+        logging.info(f"Removed file {file}")
+    except Exception as e:
+        logging.error(f"Failed to remove file {file}. Error: {e}")
+
 def main():
     setup_logging()
 
@@ -49,6 +57,7 @@ def main():
     parser.add_argument("--md5", help="Expected MD5 checksum of the final file")
     parser.add_argument("--loopmode", action="store_true", help="Enable loop mode for continuous check")
     parser.add_argument("--sleep", type=int, default=5, help="Sleep duration in seconds for loop mode")
+    parser.add_argument("--rm", action="store_true", help="Remove the source file after successful copy and MD5 verification")
 
     args = parser.parse_args()
 
@@ -65,7 +74,9 @@ def main():
                 current_md5 = calculate_md5(args.destination)
                 logging.info(f"Current MD5 of {args.destination}: {current_md5}")
                 if current_md5 == args.md5:
-                    logging.info("MD5 checksum matches the expected value. Exiting.")
+                    logging.info("MD5 checksum matches the expected value.")
+                    if args.rm:
+                        remove_file(args.source)
                     break
 
         if not args.loopmode:
